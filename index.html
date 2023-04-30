@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<h1 id="points">Points: 0</h1>
+<script>
+    const GLOBAL_STATE = {player: {x:0,y:0}, points: 0, growth: 0, apples: [], bombs: []};
+    const map = document.createElement("div");
+    map.style = "width:400px;height:300px;background-color:#fff;border:4px solid black;";
+    const player = document.createElement("div");
+    player.style = "width:20px;height:20px;position:absolute;z-index:1000;background-color:green;";
+    document.body.appendChild(map);
+    map.appendChild(player);
+    const map_cords = map.getBoundingClientRect();
+
+    window.addEventListener("keypress", function(event) {
+        if (event.code == "KeyW") {
+            if ((GLOBAL_STATE.player.y - 20) > map_cords.y) {
+                player.style.top = (GLOBAL_STATE.player.y - 20) + "px";
+                GLOBAL_STATE.player.y = parseInt(GLOBAL_STATE.player.y - 20)
+            }
+        }
+        else if (event.code == "KeyD") {
+            if ((GLOBAL_STATE.player.x + 40) < (map_cords.x + map_cords.width)) {
+                player.style.left = (GLOBAL_STATE.player.x + 20) + "px";
+                GLOBAL_STATE.player.x = parseInt(GLOBAL_STATE.player.x + 20)
+            }
+        }
+        else if (event.code == "KeyS") {
+            if ((GLOBAL_STATE.player.y + 40) < (map_cords.y + map_cords.height)) {
+                player.style.top = (GLOBAL_STATE.player.y + 20) + "px";
+                GLOBAL_STATE.player.y = parseInt(GLOBAL_STATE.player.y + 20)
+            }
+        }
+        else if (event.code == "KeyA") {
+            if ((GLOBAL_STATE.player.x - 20) > (map_cords.x)) {
+                player.style.left = (GLOBAL_STATE.player.x - 20) + "px";
+                GLOBAL_STATE.player.x = parseInt(GLOBAL_STATE.player.x - 20)
+            }
+        }
+        else {
+            console.log("Other key: " + event.code)
+        }
+
+        // Check where an Apple in the cords of the user +-20
+        let player_cords = player.getBoundingClientRect();
+        for (let i=0;i<GLOBAL_STATE.apples.length;i++) {
+            let apple = GLOBAL_STATE.apples[i];
+            if (
+                player_cords.x < (apple.x + 20) &&
+                player_cords.x > (apple.x - 20) &&
+                player_cords.y < (apple.y + 20) &&
+                player_cords.y > (apple.y - 20)
+            ) {
+                apple.element.remove();
+                GLOBAL_STATE.apples.splice(i, 1);
+                GLOBAL_STATE.points += 10;
+                GLOBAL_STATE.growth += 10;
+                document.getElementById("points").innerHTML = "Points: " + GLOBAL_STATE.points;
+            }
+        }
+
+        // Check where a Bomb in the cords of the user +-20
+        for (let i=0;i<GLOBAL_STATE.bombs.length;i++) {
+            let bomb = GLOBAL_STATE.bombs[i];
+            if (
+                player_cords.x < (bomb.x + 20) &&
+                player_cords.x > (bomb.x - 20) &&
+                player_cords.y < (bomb.y + 20) &&
+                player_cords.y > (bomb.y - 20)
+            ) {
+                alert("Game Over")
+                location.reload()
+            }
+        }
+
+        // Growth player
+        if (GLOBAL_STATE.growth >= 100) {
+            GLOBAL_STATE.growth -= 100
+            player.style.width = (parseInt(player.style.width) + 2) + "px"
+            player.style.height = (parseInt(player.style.height) + 2) + "px"
+        }
+    });
+
+
+    // Add apples to the map
+    setInterval(() => {
+        const new_apple = document.createElement("div")
+        const random_x = Math.floor((Math.random() * (map_cords.x + (map_cords.width - 30))) + map_cords.x);
+        const random_y = Math.floor((Math.random() * (map_cords.y + (map_cords.height - 100))) + map_cords.y);
+        new_apple.style = "width:20px;height:20px;position:absolute;z-index:100;background-color:red;border-radius:10px;";
+        new_apple.style.left = random_x + "px";
+        new_apple.style.top = random_y + "px";
+        map.appendChild(new_apple);
+        GLOBAL_STATE.apples.push({x:random_x, y:random_y, element:new_apple})
+    }, 1000)
+
+    // Add bombs to the map
+    setInterval(() => {
+        const new_bomb = document.createElement("div")
+        const random_x = Math.floor((Math.random() * (map_cords.x + (map_cords.width - 30))) + map_cords.x);
+        const random_y = Math.floor((Math.random() * (map_cords.y + (map_cords.height - 100))) + map_cords.y);
+        new_bomb.style = "width:20px;height:20px;position:absolute;z-index:100;background-color:steelblue;border-radius:10px;padding:2px;border:2px dashed white;";
+        new_bomb.style.left = random_x + "px";
+        new_bomb.style.top = random_y + "px";
+        map.appendChild(new_bomb);
+        GLOBAL_STATE.bombs.push({x:random_x, y:random_y, element:new_bomb})
+    }, 5000)
+</script>
+</body>
+</html>
